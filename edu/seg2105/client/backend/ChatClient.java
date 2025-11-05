@@ -27,6 +27,8 @@ public class ChatClient extends AbstractClient
    * the display method in the client.
    */
   ChatIF clientUI; 
+  
+  private String loginID;
 
   
   //Constructors ****************************************************
@@ -39,12 +41,21 @@ public class ChatClient extends AbstractClient
    * @param clientUI The interface type variable.
    */
   
-  public ChatClient(String host, int port, ChatIF clientUI) 
+  public ChatClient(String host, int port, ChatIF clientUI, String loginID) 
     throws IOException 
   {
     super(host, port); //Call the superclass constructor
     this.clientUI = clientUI;
+    this.loginID = loginID;
+    
     openConnection();
+    
+    try {
+    	sendToServer("#login " + loginID);
+    } catch (IOException e) {
+    	quit();
+    }
+    
   }
 
   
@@ -88,9 +99,49 @@ public class ChatClient extends AbstractClient
 	  
 	  if(command.equals("#quit")){
 		  quit();
-	  }else if(command.equals("#logoff")) {
+	  } else if(command.equals("#logoff")) {
+		
+		  if (isConnected()) {
+			  try {
+				  closeConnection();
+			  }catch(Exception e) {
+				  
+			  }
+		  }
+	  } else if (command.startsWith("#sethost")) {
+		  if(!isConnected()) {
+			  String newHost = command.substring(command.indexOf(" ") + 1);
+			  setHost(newHost);
+		  } else {
+			  clientUI.display("ERROR - Cannot change host while logged in!");
+		  }
+	  } else if (command.startsWith("#setport")) {
+		  if(!isConnected()) {
+			  String newPort = command.substring(command.indexOf(" ") + 1);
+			  setPort(Integer.parseInt(newPort));
+		  } else {
+			  clientUI.display("ERROR - Cannot change port while logged in!");
+		  }
+	  } else if (command.equals("#login")) {
+		  if (!isConnected()) {
+			  try {
+				  openConnection();
+				  clientUI.display("Connected!");
+			  } catch (Exception e) {
+				  
+			  }
+		  } else {
+			  clientUI.display("ERROR - Already connected to server!");
+		  }
+	  } else if (command.equals("#gethost")) {
+		  clientUI.display("Host: " + getHost());
+		  
+	  } else if (command.equals("#getport")) {
+		  clientUI.display("Port: " + getPort());
 		  
 	  }
+	  
+	  
   }
   
   /**

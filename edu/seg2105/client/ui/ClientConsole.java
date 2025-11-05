@@ -34,7 +34,7 @@ public class ClientConsole implements ChatIF
    */
   ChatClient client;
   
-  
+  private String loginID;
   
   /**
    * Scanner to read from the console
@@ -50,18 +50,18 @@ public class ClientConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ClientConsole(String host, int port, String loginID) 
   {
+	this.loginID = loginID;
     try 
     {
-      client= new ChatClient(host, port, this);
+      client= new ChatClient(host, port, this, loginID);
       
       
     } 
     catch(IOException exception) 
     {
-      System.out.println("Error: Can't setup connection!"
-                + " Terminating client.");
+      System.out.println("Error: Can't setup connection!"+ " Terminating client.");	
       System.exit(1);
     }
     
@@ -118,26 +118,37 @@ public class ClientConsole implements ChatIF
   public static void main(String[] args) 
   {
 	  
-    String host = "";
-    int port = 0;
-
+	String loginID = ""; 
+    String host = "localhost";
+    int port = DEFAULT_PORT;
+    
+    if (args.length == 0) {
+    	System.out.println("Error - No login ID specified. Connection aborted.");
+    	System.exit(1);
+    }
+    
+    
+    loginID = args[0];
+    
+    if (loginID.isEmpty()) {
+    	System.out.println("Error - No login ID specified. Connection aborted.");
+    	System.exit(1);
+    }
 
     try
     {
-      host = args[0];
-      
-      port = Integer.parseInt(args[1]);
-    }
-    catch(ArrayIndexOutOfBoundsException e)
-    {
-      host = "localhost";
-      port = DEFAULT_PORT;
+    	if (args.length >= 2) {
+            host = args[1];
+        }
+        
+        if (args.length >= 3) {
+            port = Integer.parseInt(args[2]);
+        }
     }
     catch(NumberFormatException ne){
     	port = DEFAULT_PORT;
-    	
     }
-    ClientConsole chat= new ClientConsole(host, DEFAULT_PORT);
+    ClientConsole chat = new ClientConsole(host, port, loginID);
     chat.accept();  //Wait for console data
   }
 }

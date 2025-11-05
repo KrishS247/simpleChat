@@ -6,6 +6,10 @@ package edu.seg2105.edu.server.backend;
 
 import ocsf.server.*;
 
+import java.io.IOException;
+
+import edu.seg2105.client.common.ChatIF;
+
 /**
  * This class overrides some of the methods in the abstract 
  * superclass in order to give more functionality to the server.
@@ -26,7 +30,14 @@ public class EchoServer extends AbstractServer
    */
   final public static int DEFAULT_PORT = 5555;
   
+  private ChatIF serverUI;
+  
   //Constructors ****************************************************
+  
+  public EchoServer(int port, ChatIF serverUI) {
+	  super(port);
+	  this.serverUI = serverUI;
+  }
   
   /**
    * Constructs an instance of the echo server.
@@ -37,7 +48,7 @@ public class EchoServer extends AbstractServer
   {
     super(port);
   }
-
+  
   
   //Instance methods ************************************************
   
@@ -47,21 +58,127 @@ public class EchoServer extends AbstractServer
    * @param msg The message received from the client.
    * @param client The connection from which the message originated.
    */
-  public void handleMessageFromClient
-    (Object msg, ConnectionToClient client)
-  {
-    System.out.println("Message received: " + msg + " from " + client);
+  public void handleMessageFromClient(Object msg, ConnectionToClient client){
+	  
+    //System.out.println("Message received: " + msg + " from " + client);
     
     String msgStr = (String) msg;
+    
     if(msgStr.startsWith("#login")) {
     	
+    	if (client.getInfo(loginKey) != null) {
+    		try {
+    			client.sendToClient("ERROR - You are already logged in. Terminating connection.");
+    			client.close();
+    		} catch (IOException e) {
+    			
+    		}
+    		return;
+    	}
+    	
     	String loginID = "";
+    	loginID = msgStr.substring(msgStr.indexOf(" ") + 1);
+    	
+    	System.out.println("Message recieved: #login " + loginID + " from " + client);
+    	
+    	if(loginID.isEmpty()) {
+    		try {
+    			client.sendToClient("*ERROR* No login ID provided! Terminating connection.");
+    			client.close();
+    		} catch (IOException e) {
+    			
+    		}
+    		
+    		return;
+    	}
+    	
     	client.setInfo(loginKey, loginID);
     	
-    }else {
+    	try {
+    		this.sendToAllClients(loginID + " has logged on.");
+    		
+    		System.out.println(loginID + " has logged on.");
+    	} catch (Exception e) {}
+    	
+    	
+    } else {
     
-    	this.sendToAllClients(msg);
+    	
+    	Object clientObj = client.getInfo(loginKey);
+    	
+    	if(clientObj == null) {
+    		try {
+    			client.sendToClient("*Error* Log in first! Terminiating connection.");
+    			client.close();
+    		} catch (IOException e) {}
+    		
+    		return;
+    	}
+    	
+    	String clientID = (String) clientObj;
+    	
+    	String showMsg = clientID + "> " + msgStr;
+    	
+    	System.out.println("Message received: " + msgStr + " from " + clientID);
+    	
+    	this.sendToAllClients(showMsg);
+    	
     }
+  }
+  
+  public void handleMessageFromServerUI(String message) {
+	  
+	  if (message.startsWith("#")) {
+		  handleServerCommand(message);
+	  } else {
+		  
+		  String showMessage = "SERVER MSG> " + message;
+		  
+		  serverUI.display(showMessage);
+		  
+		  this.sendToAllClients(showMessage);
+	  }
+  }
+  
+  private void handleServerCommand(String command) {
+	  try {
+		  if (command.equals("#quit")) {
+			  close();
+			  System.exit(0);
+		  } else if (command.equals("#stop")){
+			  if (isListening()) {
+				  stopListening();
+			  }
+		  } else if (command.startsWith("#setport")) {
+			  if(!isListening()) {
+				 String newPort = command.substring(command.indexOf(" ") + 1);
+				 setPort(Integer.parseInt(newPort));
+			  } else {
+				  serverUI.display("*ERROR* Cannot change port while server is listening.");
+			  }
+		  } else if (command.equals("#start")) {
+			  if(!isListening()) {
+				  listen();
+				  serverUI.display("Server listening for connections on port " + getPort());
+			  }
+		  } else if (command.equals("#getport")) {
+			  serverUI.display("Port: " + getPort());
+		  }
+	  } catch (Exception e) {}
+  }
+  
+  
+  @Override
+  protected void clientConnected(ConnectionToClient client) {
+    System.out.println("A new client has connected to the server.");
+  }
+  
+  @Override
+  protected void clientDisconnected(ConnectionToClient client) {
+	  
+	  Object clientObj = client.getInfo(loginKey);
+	  
+	  System.out.println(clientObj + " has disconnected.");
   }
     
   /**
