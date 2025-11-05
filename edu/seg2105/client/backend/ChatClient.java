@@ -80,19 +80,20 @@ public class ChatClient extends AbstractClient
    */
   public void handleMessageFromClientUI(String message)
   {
-    try{
-    	if(message.startsWith("#")) {
-    		handleCommand(message);
-    	}else {
-    		sendToServer(message);
-    	}
-    }
-    catch(IOException e)
-    {
-      clientUI.display
-        ("Could not send message to server.  Terminating client.");
-      quit();
-    }
+	  if(message.startsWith("#")){
+		  
+	      this.handleCommand(message);
+	      
+	      } else{
+	        try{
+	        	sendToServer(message);
+	    }
+	    catch(IOException e)
+	    {
+	      clientUI.display ("Could not send message to server.  Terminating client.");
+	      quit();
+	    }
+	   }
   }
   
   private void handleCommand (String command) {

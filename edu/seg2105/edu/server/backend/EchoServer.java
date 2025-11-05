@@ -9,6 +9,7 @@ import ocsf.server.*;
 import java.io.IOException;
 
 import edu.seg2105.client.common.ChatIF;
+import edu.seg2105.client.ui.ServerConsole;
 
 /**
  * This class overrides some of the methods in the abstract 
@@ -83,7 +84,7 @@ public class EchoServer extends AbstractServer
     	
     	if(loginID.isEmpty()) {
     		try {
-    			client.sendToClient("*ERROR* No login ID provided! Terminating connection.");
+    			client.sendToClient("ERROR - No login ID provided! Terminating connection.");
     			client.close();
     		} catch (IOException e) {
     			
@@ -108,7 +109,7 @@ public class EchoServer extends AbstractServer
     	
     	if(clientObj == null) {
     		try {
-    			client.sendToClient("*Error* Log in first! Terminiating connection.");
+    			client.sendToClient("Error - Log in first! Terminiating connection.");
     			client.close();
     		} catch (IOException e) {}
     		
@@ -126,6 +127,61 @@ public class EchoServer extends AbstractServer
     }
   }
   
+  public void handleServerConsole(String message) {
+	  
+	  if (message.startsWith("#")) {
+		  
+		  String[] splits = message.split(" ");
+		  String conCommand = splits[0];
+		  
+		  if (conCommand.equals("#quit")) {
+	            try {
+	                close();
+	            } catch (IOException b) {
+	                System.out.println("Could not quit the server!");
+	            }
+
+	        } else if (conCommand.equals("#stop")) {
+	            stopListening();
+
+	        } else if (conCommand.equals("#close")) {
+	            try {
+	                close();
+	            } catch (IOException b) {
+	                System.out.println("Not able to close!");
+	            }
+
+	        } else if (conCommand.equals("#setport")) {
+	            if (!isListening()) {
+	                this.setPort(Integer.parseInt(splits[1]));
+	            } else {
+	                System.out.println("Cannot perform the command since the server is not closed!");
+	            }
+
+	        } else if (conCommand.equals("#start")) {
+	            if (isListening()) {
+	                System.out.println("Cannot perform the command since you are already connected!");
+	            } else {
+	                try {
+	                    this.listen();
+	                } catch (IOException b) {
+	                    System.out.println("Connection was not made!");
+	                }
+	            }
+
+	        } else if (conCommand.equals("#getport")) {
+	            System.out.println("The Port is " + this.getPort());
+
+	        } else {
+	            System.out.println("Invalid input");
+	        }
+		  
+	  }
+  }
+  
+ 
+  
+ /* 
   public void handleMessageFromServerUI(String message) {
 	  
 	  if (message.startsWith("#")) {
@@ -134,12 +190,15 @@ public class EchoServer extends AbstractServer
 		  
 		  String showMessage = "SERVER MSG> " + message;
 		  
-		  serverUI.display(showMessage);
+		  if(serverUI != null) {
+			  serverUI.display(showMessage);
+		  }
 		  
 		  this.sendToAllClients(showMessage);
 	  }
   }
-  
+  */
+  /*
   private void handleServerCommand(String command) {
 	  try {
 		  if (command.equals("#quit")) {
@@ -166,7 +225,7 @@ public class EchoServer extends AbstractServer
 		  }
 	  } catch (Exception e) {}
   }
-  
+  */
   
   @Override
   protected void clientConnected(ConnectionToClient client) {
@@ -217,18 +276,19 @@ public class EchoServer extends AbstractServer
 
     try
     {
-      port = Integer.parseInt(args[0]); //Get port from command line
+      port = Integer.parseInt(args[0]);
     }
     catch(Throwable t)
     {
-      port = DEFAULT_PORT; //Set port to 5555
+      port = DEFAULT_PORT;
     }
 	
     EchoServer sv = new EchoServer(port);
     
+  
     try 
     {
-      sv.listen(); //Start listening for connections
+      sv.listen();
     } 
     catch (Exception ex) 
     {

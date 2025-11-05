@@ -18,49 +18,41 @@ public class ServerConsole implements ChatIF
  
   EchoServer server;
  
-  Scanner fromConsole; 
 
   
   
-  public ServerConsole(int port) 
-  {
-    try 
-    {
-      server = new EchoServer(port, this);
-      
-      
-    } 
-    catch(Exception exception) 
-    {
-      System.out.println("Error: Can't setup connection!" + " Terminating client.");
-      System.exit(1);
-    }
+  public ServerConsole(int port) {
+	  
+	  server = new EchoServer(port);
+	  try {
+	      server.listen();
+	      
+	    } catch(IOException exception) {
+	    	
+	      System.out.println("Error: Can't setup connection!" + " Terminating server");
+	      System.exit(1);
+	    }
     
-    fromConsole = new Scanner(System.in); 
     
-    try {
-    	server.listen();
-    } 
-    catch (Exception ex) {
-    	System.out.println("ERROR - Could not listen or clients!");
-    }
   }
+  
+  
 
   
   public void accept() 
   {
-    try
-    {
+    try{
+    	
+    	BufferedReader fromConsole = new BufferedReader(new InputStreamReader(System.in));
+    
 
       String message;
 
       while (true) 
       {
-        message = fromConsole.nextLine();
+        message = fromConsole.readLine();
         
-        System.out.println(message);
-        
-        server.handleMessageFromServerUI(message);
+        server.handleServerConsole(message);
       }
     } 
     catch (Exception ex) 
@@ -72,8 +64,14 @@ public class ServerConsole implements ChatIF
   
   public void display(String message) 
   {
-    System.out.println(message);
+	  if(message.startsWith("#")){
+	      return;
+	    }
+	    else{
+	          System.out.println("SERVER MSG> " + message);
+	    }
   }
+  
 
   
   
@@ -90,6 +88,7 @@ public class ServerConsole implements ChatIF
     }
     
     ServerConsole chat = new ServerConsole(port);
+    
     chat.accept();
   }
 }
