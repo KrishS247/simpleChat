@@ -10,33 +10,38 @@ import edu.seg2105.edu.server.backend.EchoServer;
 import edu.seg2105.client.common.ChatIF;
 
 
-public class ServerConsole implements ChatIF 
+public class ServerConsole implements ChatIF
 {
   
   final public static int DEFAULT_PORT = 5555;
   
  
   EchoServer server;
+  
+  BufferedReader fromConsole;
  
-
   
-  
-  public ServerConsole(int port) {
+  public ServerConsole() {
 	  
-	  server = new EchoServer(port);
+	  //server = new EchoServer(port);
+	  
 	  try {
-	      server.listen();
+	      //server.listen();
+		  
+		  fromConsole = new BufferedReader(new InputStreamReader(System.in));
 	      
-	    } catch(IOException exception) {
+	    } catch(Exception exception) {
 	    	
 	      System.out.println("Error: Can't setup connection!" + " Terminating server");
 	      System.exit(1);
 	    }
     
-    
   }
   
-  
+  public void setServer(EchoServer server) {
+	  this.server = server;
+  }
+   
 
   
   public void accept() 
@@ -74,7 +79,7 @@ public class ServerConsole implements ChatIF
   
 
   
-  
+ /* 
   public static void main(String[] args) {
 	  
     int port = 0;
@@ -90,6 +95,6 @@ public class ServerConsole implements ChatIF
     ServerConsole chat = new ServerConsole(port);
     
     chat.accept();
-  }
+  }*/
 }
 

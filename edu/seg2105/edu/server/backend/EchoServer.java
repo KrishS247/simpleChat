@@ -262,7 +262,7 @@ public class EchoServer extends AbstractServer
   
   
   //Class methods ***************************************************
-  
+
   /**
    * This method is responsible for the creation of 
    * the server instance (there is no UI in this phase).
@@ -283,9 +283,22 @@ public class EchoServer extends AbstractServer
       port = DEFAULT_PORT;
     }
 	
+    
+    
     EchoServer sv = new EchoServer(port);
     
-  
+    ServerConsole console = new ServerConsole();
+    
+    console.setServer(sv);
+    
+    sv.serverUI = console;
+    
+    Thread consoleThread = new Thread(() -> {
+    	console.accept();
+    });
+    
+    consoleThread.start();
+    
     try 
     {
       sv.listen();
@@ -296,4 +309,5 @@ public class EchoServer extends AbstractServer
     }
   }
 }
+
 //End of EchoServer class
