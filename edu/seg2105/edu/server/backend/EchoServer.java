@@ -137,8 +137,9 @@ public class EchoServer extends AbstractServer
 		  if (conCommand.equals("#quit")) {
 	            try {
 	                close();
+	                System.exit(0);
 	            } catch (IOException b) {
-	                System.out.println("Could not quit the server!");
+	                System.out.println("Error - Could not quit the server!");
 	            }
 
 	        } else if (conCommand.equals("#stop")) {
@@ -148,35 +149,40 @@ public class EchoServer extends AbstractServer
 	            try {
 	                close();
 	            } catch (IOException b) {
-	                System.out.println("Not able to close!");
+	                System.out.println("Error - Not able to close!");
 	            }
 
 	        } else if (conCommand.equals("#setport")) {
 	            if (!isListening()) {
 	                this.setPort(Integer.parseInt(splits[1]));
 	            } else {
-	                System.out.println("Cannot perform the command since the server is not closed!");
+	                System.out.println("Error - Cannot perform the command since the server is not closed!");
 	            }
 
 	        } else if (conCommand.equals("#start")) {
 	            if (isListening()) {
-	                System.out.println("Cannot perform the command since you are already connected!");
+	                System.out.println("Error - Cannot perform the command since you are already connected!");
 	            } else {
 	                try {
 	                    this.listen();
 	                } catch (IOException b) {
-	                    System.out.println("Connection was not made!");
+	                    System.out.println("Error - Connection was not made!");
 	                }
 	            }
 
 	        } else if (conCommand.equals("#getport")) {
-	            System.out.println("The Port is " + this.getPort());
+	            System.out.println("Port: " + this.getPort());
 
 	        } else {
-	            System.out.println("Invalid input");
+	            System.out.println("Error - Invalid input");
 	        }
 		  
+	  } else {
+		  
+		  this.sendToAllClients("SERVER MSG> " + message);
+		  serverUI.display(message);
 	  }
+	  
   }
   
  
